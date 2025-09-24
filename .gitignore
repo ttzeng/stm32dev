@@ -1,0 +1,25 @@
+# Eclipse Project Files
+.classpath
+.settings/
+
+# Compiled Output
+Debug/
+
+# Local History
+.metadata/
+
+# Generated Files
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs and Temporary Files
+*.log
+tmp/
+temp/
+
+# OS Specific Files
+.DS_Store # macOS
+Thumbs.db # Windows
+
