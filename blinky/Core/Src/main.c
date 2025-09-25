@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include "main.h"
 #include "cmsis_os.h"
 
@@ -11,9 +13,11 @@ const osThreadAttr_t blinkyTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+UART_HandleTypeDef huart1Handle;
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_USART1_UART_Init(void);
 void StartBlinkyTask(void *argument);
 
 int main(void)
@@ -26,6 +30,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_USART1_UART_Init();
 
   /* Init scheduler */
   osKernelInitialize();
@@ -104,13 +109,34 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(LED_PORT, &GPIO_InitStruct);
 }
 
+static void MX_USART1_UART_Init(void)
+{
+  huart1Handle.Instance = USART1;
+  huart1Handle.Init.BaudRate = 115200;
+  huart1Handle.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1Handle.Init.StopBits = UART_STOPBITS_1;
+  huart1Handle.Init.Parity = UART_PARITY_NONE;
+  huart1Handle.Init.Mode = UART_MODE_TX_RX;
+  huart1Handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1Handle.Init.OverSampling = UART_OVERSAMPLING_16;
+
+  HAL_UART_Init(&huart1Handle);
+}
+
 void StartBlinkyTask(void *argument)
 {
+  char *msg = "Hello World\r\n";
+  HAL_UART_Transmit(&huart1Handle, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+  int state = 0;
   /* Infinite loop */
   for(;;)
   {
+	char str[10];
     osDelay(1000);
-	HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
+	HAL_GPIO_WritePin(LED_PORT, LED_PIN, state ^= 1);
+	snprintf(str, sizeof(str), "LED %s\r\n", state ? "Off" : "On");
+	HAL_UART_Transmit(&huart1Handle, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
   }
 }
 
