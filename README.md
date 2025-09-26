@@ -14,8 +14,14 @@ The STM32 Black Pill is a small, complete, and breadboard-friendly board based o
 ## Resources
 
 * [STM32F103C8T6 Black Pill][1]
+* [STM32F101xx, STM32F102xx, STM32F103xx, STM32F105xx and STM32F107xx advanced Arm®-based 32-bit MCUs Reference Manual][5]
+* [STM32duino: Programming STM32 with Arduino IDE][6]
+* [Programming STM32F103C8 Board using USB Port *(Experimental)*][7]
 
 [1]: https://stm32-base.org/boards/STM32F103C8T6-Black-Pill.html "STM32-base: the Black Pill board"
 [2]: https://uglyduck.vajn.icu/ep/archive/2020/11/STM32__Pill__boards.html "STM32 Pill boards in Emil's project"
 [3]: https://uglyduck.vajn.icu/STM32_Pills/BlackPill_STM32F103_Pinout.jpg "Black Pill Pinout"
 [4]: https://innovatorsguru.com/wp-content/uploads/2019/08/stm32-black-pill-schematic-800x506.jpg "Black Pill Schematics"
+[5]: https://www.st.com/content/ccc/resource/technical/document/reference_manual/59/b9/ba/7f/11/af/43/d5/CD00171190.pdf/files/CD00171190.pdf/jcr:content/translations/en.CD00171190.pdf "STM32F10x Reference Manual"
+[6]: https://circuitdigest.com/microcontroller-projects/getting-started-with-stm32-development-board-stm32f103c8-using-arduino-ide "Programming STM32 with Arduino IDE"
+[7]: https://circuitdigest.com/microcontroller-projects/programming-stm32f103c8-board-using-usb-port "Programming STM32F103C8 Board using USB Port"
