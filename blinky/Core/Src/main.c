@@ -2,9 +2,13 @@
 #include <string.h>
 #include "main.h"
 #include "cmsis_os.h"
+#include "FreeRTOS_CLI.h"
 
 #define LED_PIN  GPIO_PIN_12
 #define LED_PORT GPIOB
+#define CLI_BUFFER_SIZE 128
+#define CLI_OUTPUT_SIZE 512
+#define CLI_QUEUE_SIZE  16
 
 /* Definitions for blinkyTask */
 osThreadId_t blinkyTaskHandle;
@@ -14,11 +18,31 @@ const osThreadAttr_t blinkyTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 UART_HandleTypeDef huart1Handle;
+uint8_t uartRxBuffer;
+
+/* CLI task and queue handles */
+osThreadId_t cliTaskHandle;
+const osThreadAttr_t cliTask_attributes = {
+  .name = "cliTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+osMessageQueueId_t cliQueueHandle;
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
+static void UART_SendString(char *str);
 void StartBlinkyTask(void *argument);
+void CLITask(void *argument);
+
+static BaseType_t taskStatsCommand(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+static const CLI_Command_Definition_t xTaskStats = {
+  "task-stats",
+  "\r\ntask-stats:\r\n Shows task statistics\r\n",
+  taskStatsCommand,
+  0
+};
 
 int main(void)
 {
@@ -35,8 +59,12 @@ int main(void)
   /* Init scheduler */
   osKernelInitialize();
 
+  FreeRTOS_CLIRegisterCommand(&xTaskStats);
+  cliQueueHandle = osMessageQueueNew(CLI_QUEUE_SIZE, sizeof(uint8_t), NULL);
+
   /* Create the thread(s) */
   blinkyTaskHandle = osThreadNew(StartBlinkyTask, NULL, &blinkyTask_attributes);
+  cliTaskHandle = osThreadNew(CLITask, NULL, &cliTask_attributes);
 
   /* Start scheduler */
   osKernelStart();
@@ -121,6 +149,26 @@ static void MX_USART1_UART_Init(void)
   huart1Handle.Init.OverSampling = UART_OVERSAMPLING_16;
 
   HAL_UART_Init(&huart1Handle);
+
+  /* Start UART receive interrupt */
+  HAL_UART_Receive_IT(&huart1Handle, &uartRxBuffer, 1);
+}
+
+static void UART_SendString(char *str)
+{
+    HAL_UART_Transmit(&huart1Handle, (uint8_t*)str, strlen(str), 100);
+}
+
+/* UART interrupt callback */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART1) {
+    /* Send received byte to CLI queue */
+	osMessageQueuePut(cliQueueHandle, &uartRxBuffer, 0, 0);
+
+    /* Restart interrupt reception */
+    HAL_UART_Receive_IT(&huart1Handle, &uartRxBuffer, 1);
+  }
 }
 
 void StartBlinkyTask(void *argument)
@@ -132,12 +180,71 @@ void StartBlinkyTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	char str[10];
     osDelay(1000);
-	HAL_GPIO_WritePin(LED_PORT, LED_PIN, state ^= 1);
-	snprintf(str, sizeof(str), "LED %s\r\n", state ? "Off" : "On");
-	HAL_UART_Transmit(&huart1Handle, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
+    HAL_GPIO_WritePin(LED_PORT, LED_PIN, state ^= 1);
   }
+}
+
+static char cliInputBuffer[CLI_BUFFER_SIZE];
+static char cliOutputBuffer[CLI_OUTPUT_SIZE];
+static uint8_t cliInputIndex = 0;
+
+void CLITask(void *argument)
+{
+  uint8_t receivedChar;
+  BaseType_t xMoreDataToFollow;
+
+  UART_SendString("\r\n\r\nFreeRTOS CLI Console\r\n");
+  UART_SendString("Type 'help' for available commands\r\n");
+  UART_SendString("> ");
+
+  while (1) {
+    if (osMessageQueueGet(cliQueueHandle, &receivedChar, NULL, osWaitForever) == osOK) {
+      if (receivedChar == '\r' || receivedChar == '\n') {
+        if (cliInputIndex > 0) {
+          UART_SendString("\r\n");
+          /* Null terminate input */
+          cliInputBuffer[cliInputIndex] = '\0';
+
+          /* Process command */
+          do {
+            xMoreDataToFollow = FreeRTOS_CLIProcessCommand(cliInputBuffer,
+                                                           cliOutputBuffer,
+                                                           CLI_OUTPUT_SIZE);
+            /* Send output */
+            UART_SendString(cliOutputBuffer);
+          } while(xMoreDataToFollow != pdFALSE);
+          /* Reset input buffer */
+          cliInputIndex = 0;
+        }
+        /* Show prompt */
+        UART_SendString("\r\n> ");
+      } else if (receivedChar == '\b' || receivedChar == 127) { // Backspace
+        if (cliInputIndex > 0) {
+          cliInputIndex--;
+          UART_SendString("\b \b");
+        }
+      } else if (cliInputIndex < (CLI_BUFFER_SIZE - 1)) {
+        /* Echo character and add to buffer */
+        cliInputBuffer[cliInputIndex++] = receivedChar;
+        HAL_UART_Transmit(&huart1Handle, &receivedChar, 1, 100);
+      }
+    }
+  }
+}
+
+static BaseType_t taskStatsCommand(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString)
+{
+  strcpy(pcWriteBuffer, "Task\t\tState\tPrio\tStack\t#\r\n");
+  strcat(pcWriteBuffer, "************************************************\r\n");
+
+  #if (configUSE_TRACE_FACILITY == 1)
+    vTaskList(pcWriteBuffer + strlen(pcWriteBuffer));
+  #else
+    strcat(pcWriteBuffer, "Task statistics not available - enable configUSE_TRACE_FACILITY\r\n");
+  #endif
+
+  return pdFALSE;
 }
 
 /**

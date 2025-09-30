@@ -57,6 +57,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern UART_HandleTypeDef huart1Handle;
 
 /* USER CODE BEGIN EV */
 
@@ -183,5 +184,8 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /* USER CODE BEGIN 1 */
-
+void USART1_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&huart1Handle);
+}
 /* USER CODE END 1 */
