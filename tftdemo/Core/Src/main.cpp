@@ -2,7 +2,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "led-blackpill.hpp"
-#include "sytft240-blackpill.hpp"
+#include "tft-sytft240-blackpill.hpp"
 
 UART_HandleTypeDef huart1;
 
@@ -140,13 +140,13 @@ void BlinkyTask(void *argument)
     }
 }
 
-static void DrawRandomLines(sytft240* tft, int count)
+static void DrawRandomLines(tft* tft, int count)
 {
-    tft->clear(COLOR_BLACK);
-    tft->draw_string(10, 10, "Random Lines", COLOR_WHITE, COLOR_BLACK);
+    tft->clear(RGB565_BLACK);
+    tft->draw_string(10, 10, "Random Lines", RGB565_WHITE, RGB565_BLACK);
 
-    uint16_t colors[] = {COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, 
-                        COLOR_CYAN, COLOR_MAGENTA, COLOR_WHITE, COLOR_ORANGE};
+    uint16_t colors[] = {RGB565_RED, RGB565_GREEN, RGB565_BLUE, RGB565_YELLOW,
+                        RGB565_CYAN, RGB565_MAGENTA, RGB565_WHITE, RGB565_ORANGE};
 
     for (int i = 0; i < count; i++) {
         int x1 = rand() % 240;
@@ -156,40 +156,40 @@ static void DrawRandomLines(sytft240* tft, int count)
         uint16_t color = colors[rand() % 8];
 
         tft->line(x1, y1, x2, y2, color);
-        HAL_Delay(100);
+        mdelay(100);
     }
 }
 
-static void DrawDemo(sytft240* tft)
+static void DrawDemo(tft* tft)
 {
     // Demo 1: Basic lines
-    tft->clear(COLOR_BLACK);
-    tft->draw_string(10, 10, "Basic Lines", COLOR_WHITE, COLOR_BLACK);
+    tft->clear(RGB565_BLACK);
+    tft->draw_string(10, 10, "Basic Lines", RGB565_WHITE, RGB565_BLACK);
 
     // Horizontal lines
     for (int i = 0; i < 10; i++) {
-        tft->line(20, 40 + i * 10, 200, 40 + i * 10, COLOR_RED);
-        HAL_Delay(100);
+        tft->line(20, 40 + i * 10, 200, 40 + i * 10, RGB565_RED);
+        mdelay(100);
     }
 
     // Vertical lines
     for (int i = 0; i < 10; i++) {
-        tft->line(20 + i * 18, 40, 20 + i * 18, 140, COLOR_GREEN);
-        HAL_Delay(100);
+        tft->line(20 + i * 18, 40, 20 + i * 18, 140, RGB565_GREEN);
+        mdelay(100);
     }
 
     // Diagonal lines
     for (int i = 0; i < 8; i++) {
-        tft->line(20, 160 + i * 10, 200, 160 + i * 10, COLOR_BLUE);
-        tft->line(20 + i * 22, 160, 20 + i * 22, 240, COLOR_YELLOW);
-        HAL_Delay(150);
+        tft->line(20, 160 + i * 10, 200, 160 + i * 10, RGB565_BLUE);
+        tft->line(20 + i * 22, 160, 20 + i * 22, 240, RGB565_YELLOW);
+        mdelay(150);
     }
 
-    HAL_Delay(2000);
+    mdelay(2000);
 
     // Demo 2: Line patterns
-    tft->clear(COLOR_BLACK);
-    tft->draw_string(10, 10, "Line Patterns", COLOR_WHITE, COLOR_BLACK);
+    tft->clear(RGB565_BLACK);
+    tft->draw_string(10, 10, "Line Patterns", RGB565_WHITE, RGB565_BLACK);
 
     // Radial lines from center
     int centerX = 120, centerY = 180;
@@ -197,58 +197,58 @@ static void DrawDemo(sytft240* tft)
         float rad = angle * 3.14159 / 180.0;
         int x = centerX + (int)(80 * cos(rad));
         int y = centerY + (int)(80 * sin(rad));
-        tft->line(centerX, centerY, x, y, COLOR_CYAN);
-        HAL_Delay(100);
+        tft->line(centerX, centerY, x, y, RGB565_CYAN);
+        mdelay(100);
     }
 
-    HAL_Delay(2000);
+    mdelay(2000);
 
     // Demo 3: Grid pattern
-    tft->clear(COLOR_BLACK);
-    tft->draw_string(10, 10, "Grid Pattern", COLOR_WHITE, COLOR_BLACK);
+    tft->clear(RGB565_BLACK);
+    tft->draw_string(10, 10, "Grid Pattern", RGB565_WHITE, RGB565_BLACK);
 
     // Draw grid
     for (int x = 20; x <= 220; x += 20) {
-        tft->line(x, 40, x, 280, COLOR_GRAY);
+        tft->line(x, 40, x, 280, RGB565_WHITE);
     }
     for (int y = 40; y <= 280; y += 20) {
-        tft->line(20, y, 220, y, COLOR_GRAY);
+        tft->line(20, y, 220, y, RGB565_WHITE);
     }
 
-    HAL_Delay(2000);
+    mdelay(2000);
 
     // Demo 4: Random lines
     DrawRandomLines(tft, 50);
 
-    HAL_Delay(3000);
+    mdelay(3000);
 
     // Demo 5: Box drawing
-    tft->clear(COLOR_BLACK);
-    tft->draw_string(10, 10, "Rectangles", COLOR_WHITE, COLOR_BLACK);
+    tft->clear(RGB565_BLACK);
+    tft->draw_string(10, 10, "Rectangles", RGB565_WHITE, RGB565_BLACK);
 
     for (int i = 0; i < 8; i++) {
-        uint16_t color = (i % 2) ? COLOR_RED : COLOR_GREEN;
+        uint16_t color = (i % 2) ? RGB565_RED : RGB565_GREEN;
         tft->rect(30 + i * 15, 50 + i * 15, 160 - i * 15, 120 - i * 15, color);
-        HAL_Delay(300);
+        mdelay(300);
     }
 
-    HAL_Delay(2000);
+    mdelay(2000);
 
     // Demo 6: Sine wave
-    tft->clear(COLOR_BLACK);
-    tft->draw_string(10, 10, "Sine Wave", COLOR_WHITE, COLOR_BLACK);
+    tft->clear(RGB565_BLACK);
+    tft->draw_string(10, 10, "Sine Wave", RGB565_WHITE, RGB565_BLACK);
 
     int prevX = 0, prevY = 160;
     for (int x = 0; x < 240; x++) {
         int y = 160 + (int)(50 * sin(x * 3.14159 / 30));
         if (x > 0)
-            tft->line(prevX, prevY, x, y, COLOR_YELLOW);
+            tft->line(prevX, prevY, x, y, RGB565_YELLOW);
         prevX = x;
         prevY = y;
-        HAL_Delay(20);
+        mdelay(20);
     }
 
-    HAL_Delay(2000);
+    mdelay(2000);
 }
 
 /**
@@ -258,7 +258,7 @@ static void DrawDemo(sytft240* tft)
   */
 void DemoTask(void *argument)
 {
-    sytft240 *tft = new sytft240_Stm32_BlackPill(mdelay);
+    tft *tft = new tft_sytft240_blackpill(mdelay);
     while (1) {
         DrawDemo(tft);
     }

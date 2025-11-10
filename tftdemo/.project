@@ -37,14 +37,19 @@
 			<locationURI>WORKSPACE_LOC/codelets/Src/led-blackpill.cpp</locationURI>
 		</link>
 		<link>
-			<name>Core/Src/sytft240-blackpill.cpp</name>
+			<name>Core/Src/tft-ili9325c.cpp</name>
 			<type>1</type>
-			<locationURI>WORKSPACE_LOC/codelets/Src/sytft240-blackpill.cpp</locationURI>
+			<locationURI>WORKSPACE_LOC/codelets/Src/tft-ili9325c.cpp</locationURI>
 		</link>
 		<link>
-			<name>Core/Src/sytft240.cpp</name>
+			<name>Core/Src/tft-sytft240-blackpill.cpp</name>
 			<type>1</type>
-			<locationURI>WORKSPACE_LOC/codelets/Src/sytft240.cpp</locationURI>
+			<locationURI>WORKSPACE_LOC/codelets/Src/tft-sytft240-blackpill.cpp</locationURI>
+		</link>
+		<link>
+			<name>Core/Src/tft.cpp</name>
+			<type>1</type>
+			<locationURI>WORKSPACE_LOC/codelets/Src/tft.cpp</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal.c</name>
