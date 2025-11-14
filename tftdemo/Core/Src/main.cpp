@@ -30,11 +30,6 @@ static void MX_GPIO_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 
-void mdelay(uint32_t msec)
-{
-    vTaskDelay(msec / portTICK_PERIOD_MS);
-}
-
 int main(void)
 {
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -189,7 +184,7 @@ static void DrawRandomLines(tft* tft, int count)
         uint16_t color = colors[rand() % 8];
 
         tft->line(x1, y1, x2, y2, color);
-        mdelay(100);
+        HAL_Delay(100);
     }
 }
 
@@ -202,23 +197,23 @@ static void DrawDemo(tft* tft)
     // Horizontal lines
     for (int i = 0; i < 10; i++) {
         tft->line(20, 40 + i * 10, 200, 40 + i * 10, RGB565_RED);
-        mdelay(100);
+        HAL_Delay(100);
     }
 
     // Vertical lines
     for (int i = 0; i < 10; i++) {
         tft->line(20 + i * 18, 40, 20 + i * 18, 140, RGB565_GREEN);
-        mdelay(100);
+        HAL_Delay(100);
     }
 
     // Diagonal lines
     for (int i = 0; i < 8; i++) {
         tft->line(20, 160 + i * 10, 200, 160 + i * 10, RGB565_BLUE);
         tft->line(20 + i * 22, 160, 20 + i * 22, 240, RGB565_YELLOW);
-        mdelay(150);
+        HAL_Delay(150);
     }
 
-    mdelay(2000);
+    HAL_Delay(2000);
 
     // Demo 2: Line patterns
     tft->clear(RGB565_BLACK);
@@ -231,10 +226,10 @@ static void DrawDemo(tft* tft)
         int x = centerX + (int)(80 * cos(rad));
         int y = centerY + (int)(80 * sin(rad));
         tft->line(centerX, centerY, x, y, RGB565_CYAN);
-        mdelay(100);
+        HAL_Delay(100);
     }
 
-    mdelay(2000);
+    HAL_Delay(2000);
 
     // Demo 3: Grid pattern
     tft->clear(RGB565_BLACK);
@@ -248,12 +243,12 @@ static void DrawDemo(tft* tft)
         tft->line(20, y, 220, y, RGB565_WHITE);
     }
 
-    mdelay(2000);
+    HAL_Delay(2000);
 
     // Demo 4: Random lines
     DrawRandomLines(tft, 50);
 
-    mdelay(3000);
+    HAL_Delay(3000);
 
     // Demo 5: Box drawing
     tft->clear(RGB565_BLACK);
@@ -262,10 +257,10 @@ static void DrawDemo(tft* tft)
     for (int i = 0; i < 8; i++) {
         uint16_t color = (i % 2) ? RGB565_RED : RGB565_GREEN;
         tft->rect(30 + i * 15, 50 + i * 15, 160 - i * 15, 120 - i * 15, color);
-        mdelay(300);
+        HAL_Delay(300);
     }
 
-    mdelay(2000);
+    HAL_Delay(2000);
 
     // Demo 6: Sine wave
     tft->clear(RGB565_BLACK);
@@ -278,10 +273,10 @@ static void DrawDemo(tft* tft)
             tft->line(prevX, prevY, x, y, RGB565_YELLOW);
         prevX = x;
         prevY = y;
-        mdelay(20);
+        HAL_Delay(20);
     }
 
-    mdelay(2000);
+    HAL_Delay(2000);
 }
 
 static void TouchScreenDemo(tft* tft, touch_screen* ts)
@@ -303,7 +298,7 @@ static void TouchScreenDemo(tft* tft, touch_screen* ts)
             sprintf(str, "(%d,%d) ", x, y);
             tft->draw_string(10, 30, str, RGB565_YELLOW, RGB565_BLACK, &Font7x10);
         }
-        mdelay(20);
+        HAL_Delay(20);
     }
 }
 
@@ -314,7 +309,7 @@ static void TouchScreenDemo(tft* tft, touch_screen* ts)
   */
 void DemoTask(void *argument)
 {
-    tft *tft = new tft_sytft240_blackpill(mdelay);
+    tft *tft = new tft_sytft240_blackpill();
     touch_screen *ts = new touch_screen_xpt2046_blackpill(tft->width(), tft->height(), &hspi2);
     while (1) {
         TouchScreenDemo(tft, ts);

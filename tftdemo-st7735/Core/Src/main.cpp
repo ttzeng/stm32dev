@@ -173,11 +173,6 @@ static void MX_GPIO_Init(void)
     __HAL_RCC_GPIOB_CLK_ENABLE();
 }
 
-static void mdelay(uint32_t msec)
-{
-    vTaskDelay(msec / portTICK_PERIOD_MS);
-}
-
 static void demo_text(tft *display)
 {
     display->clear(RGB565_BLACK);
@@ -188,7 +183,7 @@ static void demo_text(tft *display)
     display->draw_string(35, 74, "HAL SPI", RGB565_GREEN, RGB565_BLACK, &Font7x10);
     display->draw_string(20, 97, "Graphics!", RGB565_MAGENTA, RGB565_BLACK);
 
-    mdelay(2000);
+    HAL_Delay(2000);
 }
 
 static void demo_fillScreen(tft *tft)
@@ -196,19 +191,19 @@ static void demo_fillScreen(tft *tft)
     tft->clear(RGB565_BLACK);
     tft->draw_string(10, 10, "Fill Screen", RGB565_WHITE, RGB565_BLACK);
 
-    mdelay(500);
+    HAL_Delay(500);
     tft->clear(RGB565_RED);
-    mdelay(500);
+    HAL_Delay(500);
     tft->clear(RGB565_GREEN);
-    mdelay(500);
+    HAL_Delay(500);
     tft->clear(RGB565_BLUE);
-    mdelay(500);
+    HAL_Delay(500);
     tft->clear(RGB565_YELLOW);
-    mdelay(500);
+    HAL_Delay(500);
     tft->clear(RGB565_CYAN);
-    mdelay(500);
+    HAL_Delay(500);
     tft->clear(RGB565_MAGENTA);
-    mdelay(500);
+    HAL_Delay(500);
 }
 
 static void demo_lines(tft *tft)
@@ -222,14 +217,14 @@ static void demo_lines(tft *tft)
     for (int y = 0; y < height; y += 8) {
         tft->line(0, y, width-1, y, RGB565_RED);
     }
-    mdelay(1000);
+    HAL_Delay(1000);
 
     tft->clear(RGB565_BLACK);
     // Vertical lines
     for (int x = 0; x < width; x += 8) {
         tft->line(x, 0, x, height-1, RGB565_GREEN);
     }
-    mdelay(1000);
+    HAL_Delay(1000);
 
     // Diagonal lines from corners
     tft->clear(RGB565_BLACK);
@@ -241,7 +236,7 @@ static void demo_lines(tft *tft)
         tft->line(0, 0, width-1, i, RGB565_CYAN);
         tft->line(width-1, 0, 0, height-1-i, RGB565_MAGENTA);
     }
-    mdelay(1500);
+    HAL_Delay(1500);
 }
 
 static void demo_rectangles(tft *tft)
@@ -256,7 +251,7 @@ static void demo_rectangles(tft *tft)
         uint16_t color = RGB565(i*6, 255-i*6, i*3);
         tft->rect(i, i, width-1-2*i, height-1-2*i, color);
     }
-    mdelay(1500);
+    HAL_Delay(1500);
 
     // Filled rectangles grid
     tft->clear(RGB565_BLACK);
@@ -272,7 +267,7 @@ static void demo_rectangles(tft *tft)
             tft->rect(col*w, row*h, w-2, h-2, colors[row*3+col]);
         }
     }
-    mdelay(1500);
+    HAL_Delay(1500);
 }
 
 static void demo_circles(tft *tft)
@@ -290,7 +285,7 @@ static void demo_circles(tft *tft)
         uint16_t color = RGB565(r*4, 255-r*4, 128);
         tft->circle(centerX, centerY, r, color);
     }
-    mdelay(1500);
+    HAL_Delay(1500);
 
     // Filled circles pattern
     tft->clear(RGB565_BLACK);
@@ -299,7 +294,7 @@ static void demo_circles(tft *tft)
     tft->fill(40, 88, 30, RGB565_BLUE);
     tft->fill(120, 88, 30, RGB565_YELLOW);
     tft->fill(80, 64, 25, RGB565_MAGENTA);
-    mdelay(1500);
+    HAL_Delay(1500);
 }
 
 static void demo_colorPalette(tft *tft)
@@ -325,7 +320,7 @@ static void demo_colorPalette(tft *tft)
         tft->line(x, 2*barHeight, x, height-1, RGB565(0, 0, intensity));
     }
 
-    mdelay(2000);
+    HAL_Delay(2000);
 }
 
 static void demo_gradient(tft *tft)
@@ -350,7 +345,7 @@ static void demo_gradient(tft *tft)
         tft->line(0, y, width-1, y, color);
     }
 
-    mdelay(2000);
+    HAL_Delay(2000);
 }
 
 static void demo_sinewave(tft *tft)
@@ -367,12 +362,12 @@ static void demo_sinewave(tft *tft)
         prevX = x;
         prevY = y;
     }
-    mdelay(2000);
+    HAL_Delay(2000);
 }
 
 void DemoTask(void *argument)
 {
-    tft *tft = new tft_st7735_blackpill(&hspi1, mdelay);
+    tft *tft = new tft_st7735_blackpill(&hspi1);
     while (1) {
         demo_text(tft);
         demo_fillScreen(tft);
