@@ -1,10 +1,13 @@
 #include <math.h>
+#include <stdio.h>
 #include "main.h"
 #include "cmsis_os.h"
 #include "led-blackpill.hpp"
 #include "tft-sytft240-blackpill.hpp"
+#include "ts-xpt2046-blackpill.hpp"
 
 UART_HandleTypeDef huart1;
+SPI_HandleTypeDef hspi2;
 
 osThreadId_t BlinkyTaskHandle;
 const osThreadAttr_t blinkyTask_attributes = {
@@ -24,6 +27,7 @@ void DemoTask(void *argument);
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 
 void mdelay(uint32_t msec)
@@ -41,6 +45,7 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
+    MX_SPI2_Init();
     MX_USART1_UART_Init();
 
     /* Init scheduler */
@@ -127,6 +132,34 @@ static void MX_GPIO_Init(void)
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
+}
+
+/**
+  * @brief SPI2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI2_Init(void)
+{
+    /* Peripheral clock enable */
+    __HAL_RCC_SPI2_CLK_ENABLE();
+
+    /* SPI2 parameter configuration*/
+    hspi2.Instance = SPI2;
+    hspi2.Init.Mode = SPI_MODE_MASTER;
+    hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+    hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+    hspi2.Init.NSS = SPI_NSS_SOFT;
+    hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+    hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi2.Init.CRCPolynomial = 10;
+    if (HAL_SPI_Init(&hspi2) != HAL_OK) {
+        Error_Handler();
+    }
 }
 
 void BlinkyTask(void *argument)
@@ -251,6 +284,29 @@ static void DrawDemo(tft* tft)
     mdelay(2000);
 }
 
+static void TouchScreenDemo(tft* tft, touch_screen* ts)
+{
+    int w = tft->width(), h = tft->height();
+    tft->clear(RGB565_BLACK);
+    tft->rect(0, 0, w, h, RGB565_MAGENTA)
+        .fill(w - 50, h - 50, 50, 50, RGB565_GREEN)
+        .draw_string(w - 45, h - 32, "Quit", RGB565_BROWN, RGB565_GREEN, &Font11x18)
+        .draw_string(10, 10, "Touch Screen Demo", RGB565_WHITE, RGB565_BLACK, &Font7x10);
+
+    while (1) {
+        int x, y;
+        if (ts->read(x, y)) {
+            if (x < 50 && y < 50)
+                break;
+
+            char str[20];
+            sprintf(str, "(%d,%d) ", x, y);
+            tft->draw_string(10, 30, str, RGB565_YELLOW, RGB565_BLACK, &Font7x10);
+        }
+        mdelay(20);
+    }
+}
+
 /**
   * @brief  Function implementing the defaultTask thread.
   * @param  argument: Not used
@@ -259,7 +315,9 @@ static void DrawDemo(tft* tft)
 void DemoTask(void *argument)
 {
     tft *tft = new tft_sytft240_blackpill(mdelay);
+    touch_screen *ts = new touch_screen_xpt2046_blackpill(tft->width(), tft->height(), &hspi2);
     while (1) {
+        TouchScreenDemo(tft, ts);
         DrawDemo(tft);
     }
 }

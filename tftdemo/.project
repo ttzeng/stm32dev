@@ -52,6 +52,16 @@
 			<locationURI>WORKSPACE_LOC/codelets/Src/tft.cpp</locationURI>
 		</link>
 		<link>
+			<name>Core/Src/ts-xpt2046-blackpill.cpp</name>
+			<type>1</type>
+			<locationURI>WORKSPACE_LOC/codelets/Src/ts-xpt2046-blackpill.cpp</locationURI>
+		</link>
+		<link>
+			<name>Core/Src/ts-xpt2046.cpp</name>
+			<type>1</type>
+			<locationURI>WORKSPACE_LOC/codelets/Src/ts-xpt2046.cpp</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal.c</name>
 			<type>1</type>
 			<locationURI>WORKSPACE_LOC/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c</locationURI>
@@ -105,6 +115,11 @@
 			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_rcc_ex.c</name>
 			<type>1</type>
 			<locationURI>WORKSPACE_LOC/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_spi.c</name>
+			<type>1</type>
+			<locationURI>WORKSPACE_LOC/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_uart.c</name>
